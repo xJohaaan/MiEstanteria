@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Solo en la version de desarrollo (debug): Android 17+ exige este permiso para que una app
+  hable con direcciones de la red local, como el servidor del PC (10.0.2.2 o 192.168.x.x).
+  La version final (release) usa el servidor en internet y no lo necesita.
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
+</manifest>

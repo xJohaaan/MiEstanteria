@@ -1,0 +1,4 @@
+# Copia este archivo como "local.properties" (en esta misma carpeta backend/) y pon tus datos.
+# local.properties esta en .gitignore: tu contrasena no se sube al repositorio.
+spring.datasource.username=root
+spring.datasource.password=TU_CONTRASENA_DE_MYSQL
