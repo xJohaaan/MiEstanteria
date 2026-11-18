@@ -33,12 +33,26 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Firma del APK release: los datos estan en local.properties (no se suben a git)
+    val firmaArchivo = localProps.getProperty("release.storeFile")
+    signingConfigs {
+        if (firmaArchivo != null) {
+            create("release") {
+                storeFile = rootProject.file(firmaArchivo)
+                storePassword = localProps.getProperty("release.storePassword")
+                keyAlias = localProps.getProperty("release.keyAlias")
+                keyPassword = localProps.getProperty("release.keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField("String", "API_URL", "\"$apiUrlDebug\"")
         }
         release {
             buildConfigField("String", "API_URL", "\"$apiUrlRelease\"")
+            if (firmaArchivo != null) signingConfig = signingConfigs.getByName("release")
             optimization {
                 enable = true
                 packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
