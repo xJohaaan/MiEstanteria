@@ -25,7 +25,7 @@ fun LibroDto.toLibro() = Libro(
     portadaUrl = portadaUrl,
     descripcion = descripcion,
     categoria = categoria,
-    paginas = paginas
+    paginas = paginas?.takeIf { it > 0 }
 )
 
 fun Libro.toEntrada() = LibroEntrada(
@@ -45,7 +45,7 @@ fun BibliotecaItemDto.toEntity(userId: Long) = BibliotecaEntity(
     portadaUrl = libro.portadaUrl,
     descripcion = libro.descripcion,
     categoria = libro.categoria,
-    paginas = libro.paginas,
+    paginas = libro.paginas?.takeIf { it > 0 },
     estado = estadoLectura ?: EstadoLectura.POR_LEER.name,
     paginaActual = paginaActual ?: 0,
     fechaAgregado = fechaAgregado ?: ""
@@ -69,7 +69,7 @@ fun BibliotecaEntity.toItem() = ItemBiblioteca(
     libro = Libro(
         apiId = apiId, titulo = titulo, autores = autores, editorial = editorial,
         fechaPublicacion = fechaPublicacion, portadaUrl = portadaUrl, descripcion = descripcion,
-        categoria = categoria, paginas = paginas
+        categoria = categoria, paginas = paginas?.takeIf { it > 0 }
     ),
     estado = EstadoLectura.desde(estado),
     paginaActual = paginaActual,

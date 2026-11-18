@@ -122,7 +122,7 @@ public class GoogleBooksService {
                 portada,
                 i.description(),
                 categoria,
-                i.pageCount()
+                i.pageCount() != null && i.pageCount() > 0 ? i.pageCount() : null
         );
     }
 

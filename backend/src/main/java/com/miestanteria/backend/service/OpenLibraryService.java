@@ -115,7 +115,7 @@ public class OpenLibraryService {
                 d.coverI() != null ? portada(d.coverI()) : null,
                 null,
                 d.subject() != null && !d.subject().isEmpty() ? recortar(d.subject().get(0), 50) : null,
-                d.numberOfPagesMedian()
+                d.numberOfPagesMedian() != null && d.numberOfPagesMedian() > 0 ? d.numberOfPagesMedian() : null
         );
     }
 
