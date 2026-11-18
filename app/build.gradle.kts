@@ -53,9 +53,10 @@ android {
         release {
             buildConfigField("String", "API_URL", "\"$apiUrlRelease\"")
             if (firmaArchivo != null) signingConfig = signingConfigs.getByName("release")
+            // Optimizacion R8 desactivada: con optimizacion parcial por paquetes rompia
+            // el codigo que genera Room (IllegalAccessError al abrir la app)
             optimization {
-                enable = true
-                packageScope = setOf("androidx.**", "kotlin.**", "kotlinx.**")
+                enable = false
             }
         }
     }
