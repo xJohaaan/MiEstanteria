@@ -64,12 +64,18 @@ public class GoogleBooksService {
             if (resp == null || resp.items() == null) return List.of();
             return resp.items().stream().map(GoogleBooksService::aLibroDto).toList();
         } catch (RestClientException e) {
-            log.warn("Fallo la consulta a Google Books: {}", e.getMessage());
+            String detalle = e.getMessage() == null ? "" : e.getMessage();
+            log.warn("Fallo la consulta a Google Books: {}", detalle.length() > 80 ? detalle.substring(0, 80) + "..." : detalle);
             throw new ApiException(HttpStatus.BAD_GATEWAY, "No se pudo consultar Google Books. Intenta de nuevo.");
         }
     }
 
     /** Obtiene un volumen concreto por su id de Google Books. */
+    /** Sin clave, Google Books da cuota 0 por dia: no vale la pena intentarlo. */
+    public boolean tieneClave() {
+        return !apiKey.isBlank();
+    }
+
     public LibroDto obtener(String apiId) {
         try {
             Volume v = client.get()

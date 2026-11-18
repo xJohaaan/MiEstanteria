@@ -23,7 +23,8 @@ object ApiClient {
 
         val okHttp = OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
+            // La busqueda de respaldo (Open Library) puede tardar; se espera hasta 30 s
+            .readTimeout(30, TimeUnit.SECONDS)
             .addInterceptor(authInterceptor)
             .apply {
                 if (debug) {

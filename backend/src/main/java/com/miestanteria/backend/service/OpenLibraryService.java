@@ -25,14 +25,16 @@ public class OpenLibraryService {
 
     private static final Pattern ID_OPEN_LIBRARY = Pattern.compile("^OL\\d+W$");
     private static final int RESULTADOS_POR_PAGINA = 20;
-    private static final String CAMPOS = "key,title,author_name,cover_i,first_publish_year,number_of_pages_median,subject,publisher";
+    // Sin "subject": esa lista es enorme y hace la respuesta mucho mas lenta
+    private static final String CAMPOS = "key,title,author_name,cover_i,first_publish_year,number_of_pages_median,publisher";
 
     private final RestClient client;
 
     public OpenLibraryService() {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
-        factory.setConnectTimeout(3000);
-        factory.setReadTimeout(6000);
+        // Open Library es gratuita pero lenta: algunas busquedas tardan mas de 10 segundos
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(20000);
         this.client = RestClient.builder()
                 .baseUrl("https://openlibrary.org")
                 .defaultHeader("User-Agent", "MiEstanteria/1.0 (proyecto academico)")
