@@ -75,8 +75,23 @@ cd backend && ./gradlew test
 | POST | `/api/v1/auth/register` | Crear cuenta |
 | POST | `/api/v1/auth/login` | Iniciar sesión (devuelve JWT) |
 | GET | `/api/v1/usuarios/me` | Datos del usuario de la sesión |
-| GET | `/api/v1/libros/buscar?q=&tipo=titulo\|autor\|categoria&pagina=0` | Buscar en Google Books |
+| GET | `/api/v1/libros/buscar?q=&tipo=titulo\|autor\|categoria&pagina=0` | Buscar libros (Google Books; si falla, Open Library) |
 | GET | `/api/v1/libros/{apiId}` | Detalle de un libro |
+| GET | `/api/v1/biblioteca?estado=LEYENDO` | Ver mi biblioteca (filtro opcional por estado) |
+| POST | `/api/v1/biblioteca` | Agregar un libro con estado y página |
+| PUT | `/api/v1/biblioteca/{id}` | Cambiar estado o página actual |
+| DELETE | `/api/v1/biblioteca/{id}` | Quitar un libro de mi biblioteca |
 | GET | `/api/v1/salud` | Estado del servidor |
+
+### Búsqueda de libros
+
+El servidor consulta primero **Google Books**. Si Google no responde o limita las consultas (error 429,
+común sin API key), usa automáticamente **Open Library** (gratuita, sin clave), así la búsqueda nunca queda vacía.
+Con una clave de Google (`GOOGLE_BOOKS_API_KEY`) se usa Google casi siempre.
+
+### Funcionamiento sin conexión
+
+La app guarda la biblioteca en una base local (Room/SQLite). Sin internet se puede abrir la app,
+ver la estantería, el progreso y el detalle de los libros guardados; los cambios requieren conexión.
 
 Todas las rutas excepto `auth/*` y `salud` requieren la cabecera `Authorization: Bearer <token>`.

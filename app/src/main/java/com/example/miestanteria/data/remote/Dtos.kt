@@ -44,6 +44,39 @@ data class LibroDto(
     val paginas: Int?
 )
 
+/** Libro que se envia al agregarlo a la biblioteca. */
+data class LibroEntrada(
+    val apiId: String,
+    val titulo: String,
+    val autores: String?,
+    val editorial: String?,
+    val fechaPublicacion: String?,
+    val portadaUrl: String?,
+    val descripcion: String?,
+    val categoria: String?,
+    val paginas: Int?
+)
+
+data class AgregarBibliotecaRequest(
+    val libro: LibroEntrada,
+    val estadoLectura: String,
+    val paginaActual: Int?
+)
+
+/** Los campos null no se envian (Gson los omite), asi se puede cambiar solo uno. */
+data class ActualizarBibliotecaRequest(
+    val estadoLectura: String? = null,
+    val paginaActual: Int? = null
+)
+
+data class BibliotecaItemDto(
+    val id: Long,
+    val libro: LibroDto,
+    val estadoLectura: String?,
+    val paginaActual: Int?,
+    val fechaAgregado: String?
+)
+
 /** Cuerpo de error que devuelve el servidor: {"status": 409, "error": "mensaje"} */
 data class ApiError(
     val status: Int?,

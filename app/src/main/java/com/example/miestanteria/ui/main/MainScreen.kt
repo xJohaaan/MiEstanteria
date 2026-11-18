@@ -16,17 +16,25 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.miestanteria.ui.AppViewModelFactory
 import com.example.miestanteria.ui.components.NavTab
-import com.example.miestanteria.ui.screens.BooksScreen
+import com.example.miestanteria.ui.explore.ExploreScreen
+import com.example.miestanteria.ui.explore.ExploreViewModel
+import com.example.miestanteria.ui.home.HomeScreen
 import com.example.miestanteria.ui.screens.PlaceholderScreen
 import com.example.miestanteria.ui.screens.ProfileScreen
+import com.example.miestanteria.ui.shelf.ShelfScreen
+import com.example.miestanteria.ui.shelf.ShelfViewModel
 
 /** Contenedor de las 5 pestanas principales (barra inferior). */
 @Composable
 fun MainScreen(
     onLoggedOut: () -> Unit,
-    viewModel: MainViewModel = viewModel(factory = AppViewModelFactory.Factory)
+    onOpenBook: (String) -> Unit,
+    viewModel: MainViewModel = viewModel(factory = AppViewModelFactory.Factory),
+    exploreViewModel: ExploreViewModel = viewModel(factory = AppViewModelFactory.Factory),
+    shelfViewModel: ShelfViewModel = viewModel(factory = AppViewModelFactory.Factory)
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
+    val biblioteca by viewModel.biblioteca.collectAsStateWithLifecycle()
     var currentTab by rememberSaveable { mutableStateOf(NavTab.INICIO) }
     var confirmLogout by rememberSaveable { mutableStateOf(false) }
     val onTabSelected: (NavTab) -> Unit = { currentTab = it }
@@ -37,13 +45,14 @@ fun MainScreen(
 
     Crossfade(targetState = currentTab, label = "tabs", modifier = Modifier.fillMaxSize()) { tab ->
         when (tab) {
-            NavTab.INICIO -> BooksScreen(userName = nombre, onTabSelected = onTabSelected)
-            NavTab.EXPLORAR -> PlaceholderScreen(
-                tab, "Aquí podrás buscar libros en Google Books por título, autor o categoría.", onTabSelected
+            NavTab.INICIO -> HomeScreen(
+                userName = nombre,
+                biblioteca = biblioteca,
+                onOpenBook = onOpenBook,
+                onTabSelected = onTabSelected
             )
-            NavTab.ESTANTERIA -> PlaceholderScreen(
-                tab, "Aquí verás tus libros por estado: por leer, leyendo y leídos.", onTabSelected
-            )
+            NavTab.EXPLORAR -> ExploreScreen(exploreViewModel, onOpenBook, onTabSelected)
+            NavTab.ESTANTERIA -> ShelfScreen(shelfViewModel, onOpenBook, onTabSelected)
             NavTab.COMUNIDAD -> PlaceholderScreen(
                 tab, "Aquí verás las recomendaciones y reseñas de otros lectores.", onTabSelected
             )

@@ -1,20 +1,20 @@
 package com.miestanteria.backend.controller;
 
 import com.miestanteria.backend.dto.LibroDto;
-import com.miestanteria.backend.service.GoogleBooksService;
+import com.miestanteria.backend.service.CatalogoService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** Busqueda de libros en Google Books (RF03). */
+/** Busqueda de libros (RF03): Google Books, con Open Library como respaldo. */
 @RestController
 @RequestMapping("/api/v1/libros")
 public class LibroController {
 
-    private final GoogleBooksService googleBooks;
+    private final CatalogoService catalogo;
 
-    public LibroController(GoogleBooksService googleBooks) {
-        this.googleBooks = googleBooks;
+    public LibroController(CatalogoService catalogo) {
+        this.catalogo = catalogo;
     }
 
     /** GET /api/v1/libros/buscar?q=texto&tipo=titulo|autor|categoria&pagina=0 */
@@ -22,12 +22,12 @@ public class LibroController {
     public List<LibroDto> buscar(@RequestParam("q") String q,
                                  @RequestParam(value = "tipo", required = false) String tipo,
                                  @RequestParam(value = "pagina", defaultValue = "0") int pagina) {
-        return googleBooks.buscar(q, tipo, pagina);
+        return catalogo.buscar(q, tipo, pagina);
     }
 
-    /** GET /api/v1/libros/{apiId} - Detalle de un libro de Google Books. */
+    /** GET /api/v1/libros/{apiId} - Detalle de un libro. */
     @GetMapping("/{apiId}")
     public LibroDto detalle(@PathVariable String apiId) {
-        return googleBooks.obtener(apiId);
+        return catalogo.obtener(apiId);
     }
 }

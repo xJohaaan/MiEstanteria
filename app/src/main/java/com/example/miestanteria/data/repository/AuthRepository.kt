@@ -21,7 +21,8 @@ interface AuthGateway {
 /** Modelo (MVC/MVVM): registro, inicio y cierre de sesion contra el servidor. */
 class AuthRepository(
     private val api: ApiService,
-    private val sessionManager: SessionManager
+    private val sessionManager: SessionManager,
+    private val onLogout: suspend () -> Unit = {}
 ) : AuthGateway {
 
     val session = sessionManager.session
@@ -60,7 +61,11 @@ class AuthRepository(
         }
     }
 
-    suspend fun logout() = sessionManager.clear()
+    /** Cierra la sesion y borra los datos guardados en el telefono (privacidad). */
+    suspend fun logout() {
+        sessionManager.clear()
+        onLogout()
+    }
 
     private suspend fun guardar(r: NetworkResult<AuthResponse>): NetworkResult<Session> = when (r) {
         is NetworkResult.Success -> {

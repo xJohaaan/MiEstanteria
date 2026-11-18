@@ -1,10 +1,16 @@
 package com.example.miestanteria.ui.navigation
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.example.miestanteria.ui.AppViewModelFactory
+import com.example.miestanteria.ui.detail.BookDetailScreen
 import com.example.miestanteria.ui.main.MainScreen
 import com.example.miestanteria.ui.screens.LoginRoute
 import com.example.miestanteria.ui.screens.RegisterRoute
@@ -16,6 +22,8 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val MAIN = "main"
+    const val LIBRO = "libro/{apiId}"
+    fun libro(apiId: String) = "libro/${Uri.encode(apiId)}"
 }
 
 /** Navega a [route] borrando todo el historial (para que "atras" no regrese al login o al splash). */
@@ -52,7 +60,20 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.MAIN) {
-            MainScreen(onLoggedOut = { navController.goClearing(Routes.LOGIN) })
+            MainScreen(
+                onLoggedOut = { navController.goClearing(Routes.LOGIN) },
+                onOpenBook = { apiId -> navController.navigate(Routes.libro(apiId)) }
+            )
+        }
+
+        composable(
+            route = Routes.LIBRO,
+            arguments = listOf(navArgument("apiId") { type = NavType.StringType })
+        ) {
+            BookDetailScreen(
+                viewModel = viewModel(factory = AppViewModelFactory.Factory),
+                onBack = { navController.popBackStack() }
+            )
         }
     }
 }
