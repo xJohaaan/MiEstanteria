@@ -13,6 +13,11 @@ public interface MeGustaResenaRepository extends JpaRepository<MeGustaResena, Lo
 
     Optional<MeGustaResena> findByResenaIdAndUsuarioId(Long idResena, Long idUsuario);
 
+    /** Borrado directo: si ya no existe no falla (dos toques seguidos no producen error). */
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("delete from MeGustaResena m where m.resena.id = :idResena and m.usuario.id = :idUsuario")
+    int borrar(@Param("idResena") Long idResena, @Param("idUsuario") Long idUsuario);
+
     /** Cantidad de "Me gusta" de varias resenas en una sola consulta: filas [idResena, cantidad]. */
     @Query("select m.resena.id, count(m) from MeGustaResena m where m.resena.id in :ids group by m.resena.id")
     List<Object[]> contarPorResena(@Param("ids") Collection<Long> ids);

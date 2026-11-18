@@ -107,7 +107,11 @@ public class ResenaService {
             MeGustaResena mg = new MeGustaResena();
             mg.setResena(r);
             mg.setUsuario(usuarios.getReferenceById(idUsuario));
-            meGustas.save(mg);
+            try {
+                meGustas.saveAndFlush(mg);
+            } catch (org.springframework.dao.DataIntegrityViolationException yaExistia) {
+                // Dos toques al mismo tiempo: la restriccion UNIQUE ya evito el duplicado, no es un error
+            }
         }
         return estadoMeGusta(idUsuario, idResena);
     }
@@ -115,8 +119,7 @@ public class ResenaService {
     @Transactional
     public MeGustaDto quitarMeGusta(Long idUsuario, Long idResena) {
         if (!resenas.existsById(idResena)) throw ApiException.notFound("La resena no existe");
-        meGustas.findByResenaIdAndUsuarioId(idResena, idUsuario).ifPresent(meGustas::delete);
-        meGustas.flush();
+        meGustas.borrar(idResena, idUsuario);
         return estadoMeGusta(idUsuario, idResena);
     }
 

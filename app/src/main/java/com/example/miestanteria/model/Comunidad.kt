@@ -36,6 +36,39 @@ data class Recomendacion(
 
 data class Feed(val noVistas: Long, val recomendaciones: List<Recomendacion>, val resenasRecientes: List<Resena>)
 
+/** Etiqueta y cantidad para los graficos del perfil. */
+data class Conteo(val etiqueta: String, val cantidad: Int)
+
+/** Perfil de un lector con sus estadisticas (RF08). */
+data class Perfil(
+    val lector: Lector,
+    val biografia: String?,
+    val fechaRegistro: String?,
+    val esMio: Boolean,
+    val leidos: Int,
+    val leyendo: Int,
+    val porLeer: Int,
+    val paginasLeidas: Int,
+    val resenasEscritas: Int,
+    val promedioCalificacion: Double,
+    val meGustasRecibidos: Long,
+    val recomendacionesRecibidas: Long,
+    val generosFavoritos: List<Conteo>,
+    val leidosPorAnio: List<Conteo>,
+    val resenas: List<Resena>
+) {
+    val totalLibros: Int get() = leidos + leyendo + porLeer
+
+    /** "Miembro desde noviembre de 2026". */
+    val miembroDesde: String?
+        get() {
+            val f = fechaRegistro?.let { FechaRelativa.aLocal(it) } ?: return null
+            val meses = listOf("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio",
+                "agosto", "septiembre", "octubre", "noviembre", "diciembre")
+            return "Miembro desde ${meses[f.monthValue - 1]} de ${f.year}"
+        }
+}
+
 /** Reglas de los formularios de comunidad (mismas que valida el servidor). */
 object ReglasComunidad {
     const val MAX_COMENTARIO = 500

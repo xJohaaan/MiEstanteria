@@ -21,7 +21,8 @@ import com.example.miestanteria.ui.explore.ExploreViewModel
 import com.example.miestanteria.ui.home.HomeScreen
 import com.example.miestanteria.ui.community.CommunityScreen
 import com.example.miestanteria.ui.community.CommunityViewModel
-import com.example.miestanteria.ui.screens.ProfileScreen
+import com.example.miestanteria.ui.profile.ProfileScreen
+import com.example.miestanteria.ui.profile.ProfileViewModel
 import com.example.miestanteria.ui.shelf.ShelfScreen
 import com.example.miestanteria.ui.shelf.ShelfViewModel
 
@@ -30,10 +31,12 @@ import com.example.miestanteria.ui.shelf.ShelfViewModel
 fun MainScreen(
     onLoggedOut: () -> Unit,
     onOpenBook: (String) -> Unit,
+    onOpenLector: (Long) -> Unit,
     viewModel: MainViewModel = viewModel(factory = AppViewModelFactory.Factory),
     exploreViewModel: ExploreViewModel = viewModel(factory = AppViewModelFactory.Factory),
     shelfViewModel: ShelfViewModel = viewModel(factory = AppViewModelFactory.Factory),
-    communityViewModel: CommunityViewModel = viewModel(factory = AppViewModelFactory.Factory)
+    communityViewModel: CommunityViewModel = viewModel(factory = AppViewModelFactory.Factory),
+    profileViewModel: ProfileViewModel = viewModel(factory = AppViewModelFactory.Factory)
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
     val biblioteca by viewModel.biblioteca.collectAsStateWithLifecycle()
@@ -55,10 +58,11 @@ fun MainScreen(
             )
             NavTab.EXPLORAR -> ExploreScreen(exploreViewModel, onOpenBook, onTabSelected)
             NavTab.ESTANTERIA -> ShelfScreen(shelfViewModel, onOpenBook, onTabSelected)
-            NavTab.COMUNIDAD -> CommunityScreen(communityViewModel, onOpenBook, onTabSelected)
+            NavTab.COMUNIDAD -> CommunityScreen(communityViewModel, onOpenBook, onTabSelected, onOpenLector)
             NavTab.PERFIL -> ProfileScreen(
-                userName = nombre,
-                email = session?.email ?: "",
+                viewModel = profileViewModel,
+                onOpenBook = onOpenBook,
+                onOpenLector = onOpenLector,
                 onLogout = { confirmLogout = true },
                 onTabSelected = onTabSelected
             )

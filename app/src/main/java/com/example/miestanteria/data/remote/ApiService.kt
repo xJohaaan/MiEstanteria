@@ -77,4 +77,8 @@ interface ApiService {
 
     @GET("usuarios/buscar")
     suspend fun buscarUsuarios(@Query("q") q: String): List<UsuarioResumenDto>
+
+    // ---- Perfil (RF08) ----
+    @GET("usuarios/{id}")
+    suspend fun perfil(@Path("id") id: Long): PerfilDto
 }

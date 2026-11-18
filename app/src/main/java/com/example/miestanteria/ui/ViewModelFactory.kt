@@ -13,6 +13,7 @@ import com.example.miestanteria.ui.community.CommunityViewModel
 import com.example.miestanteria.ui.detail.BookDetailViewModel
 import com.example.miestanteria.ui.explore.ExploreViewModel
 import com.example.miestanteria.ui.main.MainViewModel
+import com.example.miestanteria.ui.profile.ProfileViewModel
 import com.example.miestanteria.ui.shelf.ShelfViewModel
 import com.example.miestanteria.ui.splash.SplashViewModel
 import kotlinx.coroutines.flow.map
@@ -38,5 +39,10 @@ object AppViewModelFactory {
             BookDetailViewModel(apiId, c.catalogoRepository, c.bibliotecaRepository, c.comunidadRepository)
         }
         initializer { CommunityViewModel(container().comunidadRepository) }
+        initializer {
+            // Sin argumento "id" es el perfil propio (pestana); con "id", el perfil publico de otro lector
+            val id = createSavedStateHandle().get<Long>("id")
+            ProfileViewModel(id, container().comunidadRepository, container().sessionManager)
+        }
     }
 }

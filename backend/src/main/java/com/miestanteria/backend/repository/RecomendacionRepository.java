@@ -18,4 +18,6 @@ public interface RecomendacionRepository extends JpaRepository<Recomendacion, Lo
     Optional<Recomendacion> findRecibida(@Param("id") Long id, @Param("idUsuario") Long idUsuario);
 
     long countByReceptorIdAndVistoFalse(Long idUsuario);
+
+    long countByReceptorId(Long idUsuario);
 }

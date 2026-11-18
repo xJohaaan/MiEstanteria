@@ -141,6 +141,32 @@ data class FeedDto(
     val resenasRecientes: List<ResenaDto>
 )
 
+data class ConteoDto(val etiqueta: String, val cantidad: Int)
+
+data class EstadisticasDto(
+    val leidos: Int,
+    val leyendo: Int,
+    val porLeer: Int,
+    val paginasLeidas: Int,
+    val resenasEscritas: Int,
+    val promedioCalificacion: Double,
+    val meGustasRecibidos: Long,
+    val recomendacionesRecibidas: Long
+)
+
+data class PerfilDto(
+    val id: Long,
+    val nombreUsuario: String,
+    val fotoPerfilUrl: String?,
+    val biografia: String?,
+    val fechaRegistro: String?,
+    val esMio: Boolean,
+    val estadisticas: EstadisticasDto,
+    val generosFavoritos: List<ConteoDto>?,
+    val leidosPorAnio: List<ConteoDto>?,
+    val resenas: List<ResenaDto>?
+)
+
 /** Cuerpo de error que devuelve el servidor: {"status": 409, "error": "mensaje"} */
 data class ApiError(
     val status: Int?,

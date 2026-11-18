@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.miestanteria.ui.AppViewModelFactory
 import com.example.miestanteria.ui.detail.BookDetailScreen
+import com.example.miestanteria.ui.profile.ProfileScreen
 import com.example.miestanteria.ui.main.MainScreen
 import com.example.miestanteria.ui.screens.LoginRoute
 import com.example.miestanteria.ui.screens.RegisterRoute
@@ -24,6 +25,8 @@ object Routes {
     const val MAIN = "main"
     const val LIBRO = "libro/{apiId}"
     fun libro(apiId: String) = "libro/${Uri.encode(apiId)}"
+    const val LECTOR = "lector/{id}"
+    fun lector(id: Long) = "lector/$id"
 }
 
 /** Navega a [route] borrando todo el historial (para que "atras" no regrese al login o al splash). */
@@ -62,7 +65,8 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         composable(Routes.MAIN) {
             MainScreen(
                 onLoggedOut = { navController.goClearing(Routes.LOGIN) },
-                onOpenBook = { apiId -> navController.navigate(Routes.libro(apiId)) }
+                onOpenBook = { apiId -> navController.navigate(Routes.libro(apiId)) },
+                onOpenLector = { id -> navController.navigate(Routes.lector(id)) }
             )
         }
 
@@ -72,6 +76,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             BookDetailScreen(
                 viewModel = viewModel(factory = AppViewModelFactory.Factory),
+                onBack = { navController.popBackStack() },
+                onOpenLector = { id -> navController.navigate(Routes.lector(id)) }
+            )
+        }
+
+        composable(
+            route = Routes.LECTOR,
+            arguments = listOf(navArgument("id") { type = NavType.LongType })
+        ) {
+            ProfileScreen(
+                viewModel = viewModel(factory = AppViewModelFactory.Factory),
+                onOpenBook = { apiId -> navController.navigate(Routes.libro(apiId)) },
                 onBack = { navController.popBackStack() }
             )
         }

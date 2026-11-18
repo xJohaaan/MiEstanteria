@@ -128,7 +128,8 @@ fun ResenaCard(
     mostrarLibro: Boolean = false,
     onAbrirLibro: (() -> Unit)? = null,
     onEditar: (() -> Unit)? = null,
-    onEliminar: (() -> Unit)? = null
+    onEliminar: (() -> Unit)? = null,
+    onAbrirAutor: (() -> Unit)? = null
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -138,6 +139,13 @@ fun ResenaCard(
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable(enabled = onAbrirAutor != null && !resena.esMia) { onAbrirAutor?.invoke() }
+                ) {
                 Avatar(resena.autor)
                 Spacer(modifier = Modifier.width(10.dp))
                 Column(modifier = Modifier.weight(1f)) {
@@ -150,6 +158,7 @@ fun ResenaCard(
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(FechaRelativa.desde(resena.fecha), fontSize = 11.sp, color = TextSecondary)
                     }
+                }
                 }
                 if (resena.esMia) {
                     onEditar?.let { IconButton(onClick = it) { Icon(Icons.Default.Edit, "Editar reseña", tint = SagePrimary) } }

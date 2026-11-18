@@ -226,6 +226,55 @@ class ComunidadControllerTest {
     }
 
     @Test
+    void quitarMeGustaDosVecesNoDaError() throws Exception {
+        agregarALaBiblioteca(sofia);
+        long id = resenar(sofia, 5, "Hermoso");
+        mvc.perform(post("/api/v1/resenas/" + id + "/me-gusta").header("Authorization", carlos)).andExpect(status().isOk());
+        mvc.perform(delete("/api/v1/resenas/" + id + "/me-gusta").header("Authorization", carlos)).andExpect(status().isOk());
+        mvc.perform(delete("/api/v1/resenas/" + id + "/me-gusta").header("Authorization", carlos))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.meGustas").value(0));
+    }
+
+    // ---------- RF08: perfil ----------
+
+    @Test
+    void perfilConEstadisticasReales() throws Exception {
+        agregarALaBiblioteca(sofia); // LEIDO, 96 paginas
+        mvc.perform(post("/api/v1/biblioteca").header("Authorization", sofia).contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"libro\":{\"apiId\":\"dune\",\"titulo\":\"Dune\",\"paginas\":600,\"categoria\":\"Ciencia ficcion\"},"
+                                + "\"estadoLectura\":\"LEYENDO\",\"paginaActual\":150}"))
+                .andExpect(status().isCreated());
+        long idResena = resenar(sofia, 4, "Lindo");
+        mvc.perform(post("/api/v1/resenas/" + idResena + "/me-gusta").header("Authorization", carlos));
+        long idSofia = idDe(sofia);
+
+        mvc.perform(get("/api/v1/usuarios/" + idSofia).header("Authorization", sofia))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.esMio").value(true))
+                .andExpect(jsonPath("$.estadisticas.leidos").value(1))
+                .andExpect(jsonPath("$.estadisticas.leyendo").value(1))
+                .andExpect(jsonPath("$.estadisticas.paginasLeidas").value(96 + 150))
+                .andExpect(jsonPath("$.estadisticas.resenasEscritas").value(1))
+                .andExpect(jsonPath("$.estadisticas.promedioCalificacion").value(4.0))
+                .andExpect(jsonPath("$.estadisticas.meGustasRecibidos").value(1))
+                .andExpect(jsonPath("$.generosFavoritos[0].etiqueta").value("Ciencia ficcion"))
+                .andExpect(jsonPath("$.leidosPorAnio[0].cantidad").value(1))
+                .andExpect(jsonPath("$.resenas", hasSize(1)));
+
+        // Visto por otro lector: es publico pero no es suyo y no muestra el correo
+        mvc.perform(get("/api/v1/usuarios/" + idSofia).header("Authorization", carlos))
+                .andExpect(jsonPath("$.esMio").value(false))
+                .andExpect(jsonPath("$.nombreUsuario").value("Sofia Diaz"))
+                .andExpect(jsonPath("$.email").doesNotExist());
+    }
+
+    @Test
+    void perfilInexistenteDa404() throws Exception {
+        mvc.perform(get("/api/v1/usuarios/999999").header("Authorization", sofia)).andExpect(status().isNotFound());
+    }
+
+    @Test
     void feedMuestraResenasRecientes() throws Exception {
         agregarALaBiblioteca(sofia);
         resenar(sofia, 4, "Lindo");

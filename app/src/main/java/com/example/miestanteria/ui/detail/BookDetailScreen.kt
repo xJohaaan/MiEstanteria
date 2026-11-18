@@ -83,7 +83,7 @@ import com.example.miestanteria.ui.theme.TextSecondary
 /** Ficha completa del libro (BookDetailFragment del documento). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
+fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit, onOpenLector: (Long) -> Unit = {}) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val item by viewModel.item.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
@@ -173,7 +173,8 @@ fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
                     onEscribir = { mostrarResena = true },
                     onEliminar = { confirmarBorrarResena = true },
                     onMeGusta = viewModel::alternarMeGusta,
-                    onReintentar = viewModel::cargarResenas
+                    onReintentar = viewModel::cargarResenas,
+                    onOpenLector = onOpenLector
                 )
                 Spacer(modifier = Modifier.height(32.dp))
             }
@@ -384,7 +385,8 @@ private fun SeccionResenas(
     onEscribir: () -> Unit,
     onEliminar: () -> Unit,
     onMeGusta: (Resena) -> Unit,
-    onReintentar: () -> Unit
+    onReintentar: () -> Unit,
+    onOpenLector: (Long) -> Unit
 ) {
     val resenas = state.resenas
     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -432,7 +434,7 @@ private fun SeccionResenas(
                     fontSize = 13.sp, color = TextSecondary
                 )
             }
-            resenas.deOtros.forEach { r -> ResenaCard(resena = r, onMeGusta = { onMeGusta(r) }) }
+            resenas.deOtros.forEach { r -> ResenaCard(resena = r, onMeGusta = { onMeGusta(r) }, onAbrirAutor = { onOpenLector(r.autor.id) }) }
         }
     }
 }

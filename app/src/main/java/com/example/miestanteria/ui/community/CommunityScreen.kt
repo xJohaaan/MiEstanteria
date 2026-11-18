@@ -69,7 +69,8 @@ import com.example.miestanteria.ui.theme.TextSecondary
 fun CommunityScreen(
     viewModel: CommunityViewModel,
     onOpenBook: (String) -> Unit,
-    onTabSelected: (NavTab) -> Unit
+    onTabSelected: (NavTab) -> Unit,
+    onOpenLector: (Long) -> Unit = {}
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     var pestana by rememberSaveable { mutableIntStateOf(0) }
@@ -171,7 +172,8 @@ fun CommunityScreen(
                                 resena = r,
                                 onMeGusta = { viewModel.alternarMeGusta(r) },
                                 mostrarLibro = true,
-                                onAbrirLibro = { onOpenBook(r.libro.apiId) }
+                                onAbrirLibro = { onOpenBook(r.libro.apiId) },
+                                onAbrirAutor = { onOpenLector(r.autor.id) }
                             )
                         }
                     }
