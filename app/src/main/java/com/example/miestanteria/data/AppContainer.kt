@@ -8,6 +8,7 @@ import com.example.miestanteria.data.remote.ApiService
 import com.example.miestanteria.data.repository.AuthRepository
 import com.example.miestanteria.data.repository.BibliotecaRepository
 import com.example.miestanteria.data.repository.CatalogoRepository
+import com.example.miestanteria.data.repository.ComunidadRepository
 import com.example.miestanteria.data.session.SessionManager
 
 /** Contenedor manual de dependencias (inyeccion de dependencias sencilla, sin librerias). */
@@ -26,6 +27,8 @@ class AppContainer(context: Context) {
     val catalogoRepository = CatalogoRepository(api)
 
     val bibliotecaRepository = BibliotecaRepository(api, database.bibliotecaDao(), sessionManager)
+
+    val comunidadRepository = ComunidadRepository(api)
 
     val authRepository = AuthRepository(api, sessionManager, onLogout = { bibliotecaRepository.limpiar() })
 }

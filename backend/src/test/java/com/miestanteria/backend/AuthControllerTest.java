@@ -24,11 +24,12 @@ class AuthControllerTest {
 
     @Autowired WebApplicationContext context;
     @Autowired UsuarioRepository usuarios;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     MockMvc mvc;
 
     @BeforeEach
     void setUp() {
-        usuarios.deleteAll();
+        TestSupport.limpiarBd(jdbc);
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
 

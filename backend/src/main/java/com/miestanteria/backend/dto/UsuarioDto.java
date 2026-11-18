@@ -18,7 +18,7 @@ public record UsuarioDto(
                 u.getEmail(),
                 u.getFotoPerfilUrl(),
                 u.getBiografia(),
-                u.getFechaRegistro() != null ? u.getFechaRegistro().toString() : null
+                Fechas.iso(u.getFechaRegistro())
         );
     }
 }

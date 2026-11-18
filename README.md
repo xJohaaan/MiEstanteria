@@ -81,7 +81,26 @@ cd backend && ./gradlew test
 | POST | `/api/v1/biblioteca` | Agregar un libro con estado y página |
 | PUT | `/api/v1/biblioteca/{id}` | Cambiar estado o página actual |
 | DELETE | `/api/v1/biblioteca/{id}` | Quitar un libro de mi biblioteca |
+| GET | `/api/v1/libros/{apiId}/resenas` | Reseñas de un libro con su promedio |
+| POST | `/api/v1/resenas` | Publicar reseña (1-5 estrellas, comentario ≤ 500) |
+| PUT | `/api/v1/resenas/{id}` | Editar mi reseña |
+| DELETE | `/api/v1/resenas/{id}` | Eliminar mi reseña |
+| POST | `/api/v1/resenas/{id}/me-gusta` | Dar Me gusta (no a reseñas propias) |
+| DELETE | `/api/v1/resenas/{id}/me-gusta` | Quitar Me gusta |
+| GET | `/api/v1/usuarios/{id}/resenas` | Reseñas escritas por un usuario |
+| POST | `/api/v1/recomendaciones` | Recomendar un libro a otro lector (mensaje ≤ 300) |
+| GET | `/api/v1/recomendaciones/recibidas` | Recomendaciones que me enviaron |
+| PUT | `/api/v1/recomendaciones/{id}/visto` | Marcar recomendación como vista |
+| GET | `/api/v1/feed` | Muro: recomendaciones recibidas y reseñas recientes |
+| GET | `/api/v1/usuarios/buscar?q=` | Buscar lectores por nombre |
 | GET | `/api/v1/salud` | Estado del servidor |
+
+### Reglas de la comunidad
+
+- Solo se puede reseñar un libro que está en la biblioteca propia, y una sola reseña por libro (se puede editar).
+- No se puede dar Me gusta a la reseña propia; repetir el Me gusta no lo duplica.
+- No se puede recomendar un libro a uno mismo.
+- Las fechas viajan en UTC (`2026-11-18T03:57:50Z`) y la app las muestra en la hora local del celular.
 
 ### Búsqueda de libros
 

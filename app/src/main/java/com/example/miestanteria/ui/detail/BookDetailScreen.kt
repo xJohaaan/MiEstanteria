@@ -21,7 +21,15 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BookmarkRemove
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.material.icons.filled.Share
+import androidx.compose.material3.OutlinedButton
+import com.example.miestanteria.model.Resena
+import com.example.miestanteria.ui.components.Estrellas
+import com.example.miestanteria.ui.components.RecomendarDialog
+import com.example.miestanteria.ui.components.ResenaCard
+import com.example.miestanteria.ui.components.ResenaDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -84,6 +92,9 @@ fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
     var mostrarAgregar by rememberSaveable { mutableStateOf(false) }
     var mostrarPagina by rememberSaveable { mutableStateOf(false) }
     var confirmarQuitar by rememberSaveable { mutableStateOf(false) }
+    var mostrarResena by rememberSaveable { mutableStateOf(false) }
+    var confirmarBorrarResena by rememberSaveable { mutableStateOf(false) }
+    var mostrarRecomendar by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.mensaje) {
         state.mensaje?.let {
@@ -101,6 +112,9 @@ fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
                 },
                 actions = {
                     state.libro?.let { libro ->
+                        IconButton(onClick = { mostrarRecomendar = true }, modifier = Modifier.testTag("detail_recomendar")) {
+                            Icon(Icons.Default.PersonAdd, contentDescription = "Recomendar a un lector")
+                        }
                         IconButton(onClick = { compartirLibro(context, libro) }) {
                             Icon(Icons.Default.Share, contentDescription = "Compartir")
                         }
@@ -152,6 +166,15 @@ fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
                     state.cargando -> CircularProgressIndicator(color = SagePrimary, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
                     else -> Text("Este libro no tiene sinopsis disponible.", fontSize = 14.sp, color = TextSecondary)
                 }
+                Spacer(modifier = Modifier.height(24.dp))
+                SeccionResenas(
+                    state = state,
+                    enBiblioteca = item != null,
+                    onEscribir = { mostrarResena = true },
+                    onEliminar = { confirmarBorrarResena = true },
+                    onMeGusta = viewModel::alternarMeGusta,
+                    onReintentar = viewModel::cargarResenas
+                )
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
@@ -177,6 +200,42 @@ fun BookDetailScreen(viewModel: BookDetailViewModel, onBack: () -> Unit) {
             onConfirm = {
                 mostrarPagina = false
                 viewModel.actualizarPagina(it)
+            }
+        )
+    }
+    if (mostrarResena) {
+        val mia = state.resenas?.mia
+        ResenaDialog(
+            titulo = if (mia == null) "Escribir reseña" else "Editar mi reseña",
+            estrellasIniciales = mia?.calificacion ?: 0,
+            comentarioInicial = mia?.comentario ?: "",
+            onDismiss = { mostrarResena = false },
+            onConfirm = { estrellas, comentario ->
+                mostrarResena = false
+                viewModel.publicarResena(estrellas, comentario)
+            }
+        )
+    }
+    if (confirmarBorrarResena) {
+        ConfirmDialog(
+            title = "Eliminar reseña",
+            message = "Tu reseña y sus me gusta se borrarán.",
+            confirmLabel = "Eliminar",
+            onDismiss = { confirmarBorrarResena = false },
+            onConfirm = {
+                confirmarBorrarResena = false
+                viewModel.eliminarResena()
+            }
+        )
+    }
+    if (mostrarRecomendar && libro != null) {
+        RecomendarDialog(
+            libro = libro,
+            buscar = viewModel::buscarLectores,
+            onDismiss = { mostrarRecomendar = false },
+            onEnviar = { lector, mensaje ->
+                mostrarRecomendar = false
+                viewModel.recomendar(lector, mensaje)
             }
         )
     }
@@ -313,6 +372,67 @@ private fun MiLectura(
                     Text("Quitar de mi biblioteca", color = MaterialTheme.colorScheme.error)
                 }
             }
+        }
+    }
+}
+
+/** Seccion de resenas del libro: promedio, la resena propia y las de otros lectores. */
+@Composable
+private fun SeccionResenas(
+    state: BookDetailUiState,
+    enBiblioteca: Boolean,
+    onEscribir: () -> Unit,
+    onEliminar: () -> Unit,
+    onMeGusta: (Resena) -> Unit,
+    onReintentar: () -> Unit
+) {
+    val resenas = state.resenas
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("Reseñas", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+        if (resenas != null && resenas.total > 0) {
+            Spacer(modifier = Modifier.width(10.dp))
+            Estrellas(resenas.promedio, 16.dp)
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("${resenas.promedio} (${resenas.total})", fontSize = 13.sp, color = TextSecondary)
+        }
+    }
+    Spacer(modifier = Modifier.height(10.dp))
+
+    when {
+        state.cargandoResenas && resenas == null ->
+            CircularProgressIndicator(color = SagePrimary, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        resenas == null -> Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(state.errorResenas ?: "No se pudieron cargar las reseñas", fontSize = 13.sp, color = TextSecondary, modifier = Modifier.weight(1f))
+            TextButton(onClick = onReintentar) { Text("Reintentar") }
+        }
+        else -> Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            val mia = resenas.mia
+            if (mia != null) {
+                ResenaCard(resena = mia, onMeGusta = {}, onEditar = onEscribir, onEliminar = onEliminar)
+            } else if (enBiblioteca) {
+                OutlinedButton(
+                    onClick = onEscribir,
+                    enabled = !state.trabajando,
+                    modifier = Modifier.fillMaxWidth().testTag("detail_escribir_resena"),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Icon(Icons.Default.RateReview, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Escribir reseña")
+                }
+            } else {
+                Text(
+                    "Agrega este libro a tu biblioteca para poder reseñarlo.",
+                    fontSize = 13.sp, color = TextSecondary
+                )
+            }
+            if (resenas.deOtros.isEmpty()) {
+                Text(
+                    if (mia == null) "Nadie ha reseñado este libro todavía. ¡Sé el primero!" else "Aún no hay reseñas de otros lectores.",
+                    fontSize = 13.sp, color = TextSecondary
+                )
+            }
+            resenas.deOtros.forEach { r -> ResenaCard(resena = r, onMeGusta = { onMeGusta(r) }) }
         }
     }
 }

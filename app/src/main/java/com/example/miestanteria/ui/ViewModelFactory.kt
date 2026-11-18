@@ -9,6 +9,7 @@ import com.example.miestanteria.MiEstanteriaApp
 import com.example.miestanteria.data.AppContainer
 import com.example.miestanteria.ui.auth.LoginViewModel
 import com.example.miestanteria.ui.auth.RegisterViewModel
+import com.example.miestanteria.ui.community.CommunityViewModel
 import com.example.miestanteria.ui.detail.BookDetailViewModel
 import com.example.miestanteria.ui.explore.ExploreViewModel
 import com.example.miestanteria.ui.main.MainViewModel
@@ -33,7 +34,9 @@ object AppViewModelFactory {
         initializer { ShelfViewModel(container().bibliotecaRepository) }
         initializer {
             val apiId = requireNotNull(createSavedStateHandle().get<String>("apiId"))
-            BookDetailViewModel(apiId, container().catalogoRepository, container().bibliotecaRepository)
+            val c = container()
+            BookDetailViewModel(apiId, c.catalogoRepository, c.bibliotecaRepository, c.comunidadRepository)
         }
+        initializer { CommunityViewModel(container().comunidadRepository) }
     }
 }

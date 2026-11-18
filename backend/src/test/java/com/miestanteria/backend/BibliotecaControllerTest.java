@@ -27,13 +27,12 @@ class BibliotecaControllerTest {
     @Autowired UsuarioRepository usuarios;
     @Autowired LibroRepository libros;
     @Autowired BibliotecaUsuarioRepository biblioteca;
+    @Autowired org.springframework.jdbc.core.JdbcTemplate jdbc;
     MockMvc mvc;
 
     @BeforeEach
     void setUp() {
-        biblioteca.deleteAll();
-        libros.deleteAll();
-        usuarios.deleteAll();
+        TestSupport.limpiarBd(jdbc);
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
     }
 

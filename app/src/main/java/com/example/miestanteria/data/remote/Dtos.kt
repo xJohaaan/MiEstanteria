@@ -77,6 +77,70 @@ data class BibliotecaItemDto(
     val fechaAgregado: String?
 )
 
+// ---------- Comunidad: resenas, me gusta, recomendaciones ----------
+
+data class UsuarioResumenDto(
+    val id: Long,
+    val nombreUsuario: String,
+    val fotoPerfilUrl: String?
+)
+
+data class ResenaDto(
+    val id: Long,
+    val autor: UsuarioResumenDto,
+    val libro: LibroDto,
+    val calificacion: Int,
+    val comentario: String?,
+    val fechaPublicacion: String?,
+    val meGustas: Long,
+    val meGustaMio: Boolean,
+    val esMia: Boolean
+)
+
+data class ResenasLibroDto(
+    val promedio: Double,
+    val total: Int,
+    val resenas: List<ResenaDto>
+)
+
+data class MeGustaDto(
+    val idResena: Long,
+    val meGustas: Long,
+    val meGustaMio: Boolean
+)
+
+data class CrearResenaRequest(
+    val libro: LibroEntrada,
+    val calificacion: Int,
+    val comentario: String?
+)
+
+data class ActualizarResenaRequest(
+    val calificacion: Int,
+    val comentario: String?
+)
+
+data class RecomendarRequest(
+    val receptorId: Long,
+    val libro: LibroEntrada,
+    val mensaje: String?
+)
+
+data class RecomendacionDto(
+    val id: Long,
+    val emisor: UsuarioResumenDto,
+    val libro: LibroDto,
+    val mensaje: String?,
+    val visto: Boolean,
+    val fechaEnvio: String?
+)
+
+data class FeedDto(
+    val noVistas: Long,
+    val recomendaciones: List<RecomendacionDto>,
+    val resenasRecientes: List<ResenaDto>
+)
+
 /** Cuerpo de error que devuelve el servidor: {"status": 409, "error": "mensaje"} */
 data class ApiError(
     val status: Int?,

@@ -45,7 +45,7 @@ public final class BibliotecaDtos {
     ) {
         public static BibliotecaItemDto from(BibliotecaUsuario b) {
             return new BibliotecaItemDto(b.getId(), LibroDto.from(b.getLibro()), b.getEstadoLectura(),
-                    b.getPaginaActual(), b.getFechaAgregado() != null ? b.getFechaAgregado().toString() : null);
+                    b.getPaginaActual(), Fechas.iso(b.getFechaAgregado()));
         }
     }
 }
