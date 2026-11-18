@@ -46,7 +46,16 @@ public class OpenLibraryService {
         return apiId != null && ID_OPEN_LIBRARY.matcher(apiId).matches();
     }
 
+    /** Open Library a veces falla con muchas consultas simultaneas: se reintenta una vez. */
     public List<LibroDto> buscar(String texto, String tipo, int pagina) {
+        try {
+            return buscarUnaVez(texto, tipo, pagina);
+        } catch (ApiException primerFallo) {
+            return buscarUnaVez(texto, tipo, pagina);
+        }
+    }
+
+    private List<LibroDto> buscarUnaVez(String texto, String tipo, int pagina) {
         String param = switch (tipo == null ? "" : tipo) {
             case "titulo" -> "title";
             case "autor" -> "author";
