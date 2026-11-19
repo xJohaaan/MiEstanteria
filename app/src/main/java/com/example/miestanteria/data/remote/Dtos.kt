@@ -16,6 +16,16 @@ data class LoginRequest(
     val password: String
 )
 
+data class ActualizarPerfilRequest(
+    val nombreUsuario: String? = null,
+    val biografia: String? = null
+)
+
+data class CambiarPasswordRequest(
+    val passwordActual: String,
+    val passwordNueva: String
+)
+
 data class AuthResponse(
     val token: String,
     val expiraEnSegundos: Long,

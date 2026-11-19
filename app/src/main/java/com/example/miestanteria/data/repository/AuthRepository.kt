@@ -1,10 +1,13 @@
 package com.example.miestanteria.data.repository
 
+import com.example.miestanteria.data.remote.ActualizarPerfilRequest
 import com.example.miestanteria.data.remote.ApiService
 import com.example.miestanteria.data.remote.AuthResponse
+import com.example.miestanteria.data.remote.CambiarPasswordRequest
 import com.example.miestanteria.data.remote.LoginRequest
 import com.example.miestanteria.data.remote.NetworkResult
 import com.example.miestanteria.data.remote.RegisterRequest
+import com.example.miestanteria.data.remote.UsuarioDto
 import com.example.miestanteria.data.remote.safeApiCall
 import com.example.miestanteria.data.session.Session
 import com.example.miestanteria.data.session.SessionManager
@@ -61,10 +64,31 @@ class AuthRepository(
         }
     }
 
+    /**
+     * Obtiene los datos del usuario autenticado desde el servidor.
+     */
+    suspend fun me(): NetworkResult<UsuarioDto> {
+        return safeApiCall { api.me() }
+    }
+
     /** Cierra la sesion y borra los datos guardados en el telefono (privacidad). */
     suspend fun logout() {
         sessionManager.clear()
         onLogout()
+    }
+
+    /** Actualiza el nombre y/o biografia del usuario autenticado. */
+    suspend fun actualizarPerfil(nombreUsuario: String?, biografia: String?): NetworkResult<UsuarioDto> {
+        return safeApiCall {
+            api.actualizarPerfil(ActualizarPerfilRequest(nombreUsuario, biografia))
+        }
+    }
+
+    /** Cambia la contraseña del usuario autenticado. */
+    suspend fun cambiarPassword(passwordActual: String, passwordNueva: String): NetworkResult<Unit> {
+        return safeApiCall {
+            api.cambiarPassword(CambiarPasswordRequest(passwordActual, passwordNueva))
+        }
     }
 
     private suspend fun guardar(r: NetworkResult<AuthResponse>): NetworkResult<Session> = when (r) {

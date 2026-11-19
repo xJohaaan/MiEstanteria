@@ -16,6 +16,9 @@ import com.example.miestanteria.ui.main.MainScreen
 import com.example.miestanteria.ui.screens.LoginRoute
 import com.example.miestanteria.ui.screens.RegisterRoute
 import com.example.miestanteria.ui.screens.SplashScreen
+import com.example.miestanteria.ui.settings.SettingsScreen
+import com.example.miestanteria.ui.settings.SettingsViewModel
+import com.example.miestanteria.MiEstanteriaApp
 
 /** Rutas de navegacion de la app. */
 object Routes {
@@ -23,6 +26,7 @@ object Routes {
     const val LOGIN = "login"
     const val REGISTER = "register"
     const val MAIN = "main"
+    const val SETTINGS = "settings"
     const val LIBRO = "libro/{apiId}"
     fun libro(apiId: String) = "libro/${Uri.encode(apiId)}"
     const val LECTOR = "lector/{id}"
@@ -66,7 +70,18 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             MainScreen(
                 onLoggedOut = { navController.goClearing(Routes.LOGIN) },
                 onOpenBook = { apiId -> navController.navigate(Routes.libro(apiId)) },
-                onOpenLector = { id -> navController.navigate(Routes.lector(id)) }
+                onOpenLector = { id -> navController.navigate(Routes.lector(id)) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
+            )
+        }
+
+        composable(Routes.SETTINGS) {
+            val app = androidx.compose.ui.platform.LocalContext.current.applicationContext as MiEstanteriaApp
+            val settingsViewModel = viewModel<SettingsViewModel>(factory = AppViewModelFactory.Factory)
+            SettingsScreen(
+                themePreference = app.container.themePreference,
+                settingsViewModel = settingsViewModel,
+                onBack = { navController.popBackStack() }
             )
         }
 

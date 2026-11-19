@@ -22,6 +22,12 @@ interface ApiService {
     @GET("usuarios/me")
     suspend fun me(): UsuarioDto
 
+    @PUT("usuarios/me")
+    suspend fun actualizarPerfil(@Body request: ActualizarPerfilRequest): UsuarioDto
+
+    @PUT("usuarios/me/password")
+    suspend fun cambiarPassword(@Body request: CambiarPasswordRequest)
+
     // ---- Libros (Google Books / Open Library) ----
     @GET("libros/buscar")
     suspend fun buscarLibros(
