@@ -1,19 +1,21 @@
 *.iml
 .gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+
+# Configuración del IDE (Android Studio)
+.idea/
+
 .DS_Store
+
+# Configuración local de OpenCode (MCP / preferencias personales)
 /build
 /captures
 .externalNativeBuild
 .cxx
 local.properties
 .kotlin/
+
+# Configuración local de OpenCode (MCP / preferencias personales)
+opencode.json
 
 # Firma del APK y documentos temporales de Word
 *.jks
