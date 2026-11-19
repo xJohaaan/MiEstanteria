@@ -17,12 +17,14 @@ public class LibroController {
         this.catalogo = catalogo;
     }
 
-    /** GET /api/v1/libros/buscar?q=texto&tipo=titulo|autor|categoria&pagina=0 */
+    /** GET /api/v1/libros/buscar?q=texto&tipo=titulo|autor|categoria&pagina=0&anioDesde=2000&anioHasta=2020 */
     @GetMapping("/buscar")
     public List<LibroDto> buscar(@RequestParam("q") String q,
                                  @RequestParam(value = "tipo", required = false) String tipo,
-                                 @RequestParam(value = "pagina", defaultValue = "0") int pagina) {
-        return catalogo.buscar(q, tipo, pagina);
+                                 @RequestParam(value = "pagina", defaultValue = "0") int pagina,
+                                 @RequestParam(value = "anioDesde", required = false) Integer anioDesde,
+                                 @RequestParam(value = "anioHasta", required = false) Integer anioHasta) {
+        return catalogo.buscar(q, tipo, pagina, anioDesde, anioHasta);
     }
 
     /** GET /api/v1/libros/{apiId} - Detalle de un libro. */

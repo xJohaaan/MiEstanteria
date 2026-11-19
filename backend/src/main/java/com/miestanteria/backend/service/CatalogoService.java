@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Punto unico para buscar libros: primero Google Books (fuente principal, RF03)
@@ -25,6 +26,7 @@ public class CatalogoService {
     private static final Logger log = LoggerFactory.getLogger(CatalogoService.class);
     private static final Duration VIGENCIA_CACHE = Duration.ofMinutes(30);
     private static final int MAX_CACHE = 300;
+    private static final Pattern ANIO = Pattern.compile("\\d{4}");
 
     private final GoogleBooksService google;
     private final OpenLibraryService openLibrary;
@@ -44,20 +46,51 @@ public class CatalogoService {
         this.openLibrary = openLibrary;
     }
 
-    public List<LibroDto> buscar(String texto, String tipo, int pagina) {
+    public List<LibroDto> buscar(String texto, String tipo, int pagina, Integer anioDesde, Integer anioHasta) {
         if (texto == null || texto.isBlank()) {
             throw ApiException.badRequest("Escribe algo para buscar");
         }
-        String clave = texto.trim().toLowerCase(Locale.ROOT) + "|" + tipo + "|" + pagina;
+        if (anioDesde != null && anioHasta != null && anioDesde > anioHasta) {
+            throw ApiException.badRequest("El ano inicial no puede ser mayor que el ano final");
+        }
+        String clave = texto.trim().toLowerCase(Locale.ROOT) + "|" + tipo + "|" + pagina
+                + "|" + anioDesde + "|" + anioHasta;
         synchronized (cache) {
             Entrada e = cache.get(clave);
             if (e != null && e.creada().plus(VIGENCIA_CACHE).isAfter(Instant.now())) return e.libros();
         }
-        List<LibroDto> libros = consultar(texto, tipo, pagina);
+        List<LibroDto> libros = filtrarPorAnio(consultar(texto, tipo, pagina), anioDesde, anioHasta);
         synchronized (cache) {
             cache.put(clave, new Entrada(libros, Instant.now()));
         }
         return libros;
+    }
+
+    /**
+     * Filtra la pagina ya descargada. Google Books y Open Library no permiten filtrar
+     * por ano en la consulta, asi que se aplica aqui sobre los resultados recibidos.
+     */
+    private static List<LibroDto> filtrarPorAnio(List<LibroDto> libros, Integer desde, Integer hasta) {
+        if (desde == null && hasta == null) return libros;
+        return libros.stream().filter(l -> {
+            Integer anio = anioDe(l.fechaPublicacion());
+            if (anio == null) return false;
+            if (desde != null && anio < desde) return false;
+            if (hasta != null && anio > hasta) return false;
+            return true;
+        }).toList();
+    }
+
+    /** Extrae el ano de fechas como "2018", "2018-05-01" o "May 2018". */
+    private static Integer anioDe(String fecha) {
+        if (fecha == null) return null;
+        var m = ANIO.matcher(fecha);
+        if (!m.find()) return null;
+        try {
+            return Integer.parseInt(m.group());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private List<LibroDto> consultar(String texto, String tipo, int pagina) {
