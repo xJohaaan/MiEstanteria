@@ -46,6 +46,6 @@ class GoogleBooksServiceTest {
         GoogleBooksService s = new GoogleBooksService("");
         assertThatThrownBy(() -> s.buscar("  ", null, 0)).isInstanceOf(ApiException.class);
         CatalogoService c = new CatalogoService(s, new OpenLibraryService());
-        assertThatThrownBy(() -> c.buscar("", null, 0)).isInstanceOf(ApiException.class);
+        assertThatThrownBy(() -> c.buscar("", null, 0, null, null)).isInstanceOf(ApiException.class);
     }
 }
