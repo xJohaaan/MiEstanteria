@@ -28,6 +28,8 @@ public class SecurityConfig {
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/auth/**", "/api/v1/salud", "/error").permitAll()
+                        // Documentacion interactiva del API (Swagger UI)
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> {
                     res.setStatus(HttpStatus.UNAUTHORIZED.value());

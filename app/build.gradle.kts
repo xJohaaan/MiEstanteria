@@ -4,6 +4,11 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
+    jacoco
+}
+
+jacoco {
+    toolVersion = "0.8.13"
 }
 
 // URL del servidor. Se puede cambiar sin tocar codigo poniendo en local.properties:
@@ -106,4 +111,36 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
+    debugImplementation("com.squareup.leakcanary:leakcanary-android:2.14")
+}
+
+/**
+ * Reporte de cobertura de las pruebas unitarias (RNF05).
+ * Se genera con: ./gradlew jacocoTestReport
+ * El HTML queda en app/build/reports/jacoco/jacocoTestReport/html/index.html
+ */
+tasks.register<JacocoReport>("jacocoTestReport") {
+    dependsOn("testDebugUnitTest")
+    group = "verification"
+    description = "Genera el reporte de cobertura de las pruebas unitarias (JaCoCo)."
+
+    val dir = layout.buildDirectory.get().asFile
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+    classDirectories.setFrom(
+        fileTree(dir.resolve("tmp/kotlin-classes/debug")) {
+            exclude(
+                "**/R.class",
+                "**/R$*.class",
+                "**/BuildConfig.*",
+                "**/Manifest*.*",
+                "**/*_Hilt*.*",
+                "**/*ComposableSingletons*.*"
+            )
+        }
+    )
+    sourceDirectories.setFrom(files("src/main/java"))
+    executionData.setFrom(fileTree(dir) { include("jacoco/testDebugUnitTest.exec") })
 }

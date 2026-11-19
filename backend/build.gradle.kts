@@ -1,7 +1,12 @@
 plugins {
 	java
+	jacoco
 	id("org.springframework.boot") version "4.1.2"
 	id("io.spring.dependency-management") version "1.1.7"
+}
+
+jacoco {
+	toolVersion = "0.8.13"
 }
 
 group = "com.miestanteria"
@@ -31,6 +36,9 @@ dependencies {
 
 	runtimeOnly("com.mysql:mysql-connector-j")
 
+	// Documentacion interactiva del API (Swagger / OpenAPI)
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.0")
+
 	testRuntimeOnly("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-data-jpa-test")
 	testImplementation("org.springframework.boot:spring-boot-starter-security-test")
@@ -41,4 +49,16 @@ dependencies {
 
 tasks.withType<Test> {
 	useJUnitPlatform()
+}
+tasks.withType<Test> {
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+/** Reporte de cobertura de las pruebas del backend (RNF05). */
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required.set(true)
+		html.required.set(true)
+	}
 }
