@@ -108,6 +108,7 @@ fun CommunityScreen(
                     }
                 })
                 Tab(selected = pestana == 1, onClick = { pestana = 1 }, text = { Text("Reseñas recientes") })
+                Tab(selected = pestana == 2, onClick = { pestana = 2 }, text = { Text("Mis reseñas") })
             }
 
             PullToRefreshBox(
@@ -152,7 +153,7 @@ fun CommunityScreen(
                             })
                         }
                     }
-                    else -> LazyColumn(
+                    pestana == 1 -> LazyColumn(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                         modifier = Modifier.fillMaxSize()
@@ -174,6 +175,30 @@ fun CommunityScreen(
                                 mostrarLibro = true,
                                 onAbrirLibro = { onOpenBook(r.libro.apiId) },
                                 onAbrirAutor = { onOpenLector(r.autor.id) }
+                            )
+                        }
+                    }
+                    else -> LazyColumn(
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        if (state.misResenas.isEmpty()) {
+                            item {
+                                MessageView(
+                                    icon = Icons.Default.RateReview,
+                                    title = "Aún no has escrito reseñas",
+                                    message = "Califica y reseña los libros de tu estantería para compartir tu opinión con la comunidad.",
+                                    modifier = Modifier.padding(top = 32.dp)
+                                )
+                            }
+                        }
+                        items(state.misResenas, key = { it.id }) { r ->
+                            ResenaCard(
+                                resena = r,
+                                onMeGusta = { viewModel.alternarMeGusta(r) },
+                                mostrarLibro = true,
+                                onAbrirLibro = { onOpenBook(r.libro.apiId) }
                             )
                         }
                     }
