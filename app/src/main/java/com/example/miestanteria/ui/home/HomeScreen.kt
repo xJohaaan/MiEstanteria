@@ -33,6 +33,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -85,6 +86,15 @@ fun HomeScreen(
 
     Scaffold(
         bottomBar = { BottomNavBar(selectedTab = NavTab.INICIO, onTabSelected = onTabSelected) },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = { onTabSelected(NavTab.EXPLORAR) },
+                containerColor = SagePrimary,
+                contentColor = Color.White
+            ) {
+                Icon(Icons.Default.Search, contentDescription = "Buscar libros")
+            }
+        },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         LazyVerticalGrid(
