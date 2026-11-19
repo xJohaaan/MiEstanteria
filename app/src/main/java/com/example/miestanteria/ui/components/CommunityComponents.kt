@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.height
@@ -50,12 +51,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
+import coil.request.ImageRequest
 import com.example.miestanteria.data.remote.NetworkResult
 import com.example.miestanteria.model.FechaRelativa
 import com.example.miestanteria.model.Lector
@@ -101,7 +106,7 @@ fun SelectorEstrellas(valor: Int, onChange: (Int) -> Unit) {
     }
 }
 
-/** Circulo con las iniciales del lector. */
+/** Circulo con la foto del lector o, si no tiene, sus iniciales. */
 @Composable
 fun Avatar(lector: Lector, tamano: Dp = 36.dp) {
     Box(
@@ -112,7 +117,34 @@ fun Avatar(lector: Lector, tamano: Dp = 36.dp) {
             .border(1.dp, SagePrimary.copy(alpha = 0.3f), CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Text(lector.iniciales, fontSize = (tamano.value * 0.38f).sp, fontWeight = FontWeight.Bold, color = SagePrimary)
+        if (lector.fotoUrl.isNullOrBlank()) {
+            Iniciales(lector, tamano)
+        } else {
+            SubcomposeAsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(lector.fotoUrl)
+                    .crossfade(true)
+                    .build(),
+                contentDescription = "Foto de ${lector.nombre}",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize().clip(CircleShape),
+                loading = { Iniciales(lector, tamano) },
+                error = { Iniciales(lector, tamano) }
+            )
+        }
+    }
+}
+
+/** Iniciales del lector, usadas como respaldo cuando no hay foto. */
+@Composable
+private fun Iniciales(lector: Lector, tamano: Dp) {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text(
+            lector.iniciales,
+            fontSize = (tamano.value * 0.38f).sp,
+            fontWeight = FontWeight.Bold,
+            color = SagePrimary
+        )
     }
 }
 
