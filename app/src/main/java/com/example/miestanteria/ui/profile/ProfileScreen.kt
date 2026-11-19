@@ -1,6 +1,7 @@
 package com.example.miestanteria.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -25,7 +28,11 @@ import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.RateReview
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,8 +40,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -44,6 +53,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -76,6 +86,7 @@ fun ProfileScreen(
     onOpenBook: (String) -> Unit,
     onOpenLector: (Long) -> Unit = {},
     onLogout: (() -> Unit)? = null,
+    onSettingsClick: (() -> Unit)? = null,
     onTabSelected: ((NavTab) -> Unit)? = null,
     onBack: (() -> Unit)? = null
 ) {
@@ -97,27 +108,34 @@ fun ProfileScreen(
         bottomBar = { onTabSelected?.let { BottomNavBar(selectedTab = NavTab.PERFIL, onTabSelected = it) } },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        PullToRefreshBox(
-            isRefreshing = state.cargando && state.perfil != null,
-            onRefresh = viewModel::cargar,
-            modifier = Modifier.fillMaxSize().padding(padding)
-        ) {
-            val perfil = state.perfil
-            when {
-                perfil == null && state.error == null -> LoadingView()
-                perfil == null -> Column(
-                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    MessageView(
-                        icon = Icons.Default.CloudOff,
-                        title = "No se pudo cargar el perfil",
-                        message = state.error ?: "",
-                        actionLabel = "Reintentar",
-                        onAction = viewModel::cargar
-                    )
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            PullToRefreshBox(
+                isRefreshing = state.cargando && state.perfil != null,
+                onRefresh = viewModel::cargar,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                val perfil = state.perfil
+                when {
+                    perfil == null && state.error == null -> LoadingView()
+                    perfil == null -> Column(
+                        Modifier.fillMaxSize().verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        MessageView(
+                            icon = Icons.Default.CloudOff,
+                            title = "No se pudo cargar el perfil",
+                            message = state.error ?: "",
+                            actionLabel = "Reintentar",
+                            onAction = viewModel::cargar
+                        )
+                    }
+                    else -> ContenidoPerfil(perfil, onLogout, onSettingsClick, onOpenBook, onOpenLector, viewModel)
                 }
-                else -> ContenidoPerfil(perfil, onLogout, onOpenBook, onOpenLector, viewModel)
+            }
+
+            // Diálogo de recomendación (documento 9.1 - UserProfileFragment)
+            if (state.mostrarDialogoRecomendar) {
+                DialogoRecomendar(viewModel)
             }
         }
     }
@@ -127,6 +145,7 @@ fun ProfileScreen(
 private fun ContenidoPerfil(
     perfil: Perfil,
     onLogout: (() -> Unit)?,
+    onSettingsClick: (() -> Unit)?,
     onOpenBook: (String) -> Unit,
     onOpenLector: (Long) -> Unit,
     viewModel: ProfileViewModel
@@ -145,7 +164,30 @@ private fun ContenidoPerfil(
                 Text(perfil.lector.nombre, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                 perfil.miembroDesde?.let { Text(it, fontSize = 13.sp, color = TextSecondary) }
             }
-            if (perfil.esMio && onLogout != null) {
+            if (!perfil.esMio) {
+                // Botón "Recomendar libro" (documento 9.1 - UserProfileFragment)
+                Button(
+                    onClick = { viewModel.mostrarDialogoRecomendar() },
+                    modifier = Modifier.padding(start = 8.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = SagePrimary,
+                        contentColor = Color.White
+                    )
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Filled.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Recomendar", fontSize = 14.sp)
+                }
+            } else if (onLogout != null) {
+                if (onSettingsClick != null) {
+                    IconButton(onClick = onSettingsClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "Configuración", tint = SagePrimary)
+                    }
+                }
                 IconButton(onClick = onLogout) {
                     Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = "Cerrar sesión", tint = SagePrimary)
                 }
@@ -327,4 +369,122 @@ private fun GraficoBarras(datos: List<Conteo>) {
             }
         }
     }
+}
+
+/**
+ * Dialogo para recomendar un libro a otro lector (documento 9.1 - UserProfileFragment).
+ * Muestra la biblioteca del usuario actual para seleccionar un libro y un campo de mensaje opcional.
+ */
+@Composable
+private fun DialogoRecomendar(viewModel: ProfileViewModel) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val miBiblioteca by viewModel.miBiblioteca.collectAsStateWithLifecycle()
+
+    AlertDialog(
+        onDismissRequest = { viewModel.ocultarDialogoRecomendar() },
+        title = { Text("Recomendar un libro") },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(400.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    "Selecciona un libro de tu biblioteca:",
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                // Lista de libros de la biblioteca del usuario
+                if (miBiblioteca.isEmpty()) {
+                    Text(
+                        "No tienes libros en tu biblioteca aún.",
+                        fontSize = 13.sp,
+                        color = TextSecondary
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(miBiblioteca) { item ->
+                            val isSelected = state.libroSeleccionado?.apiId == item.libro.apiId
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable { viewModel.seleccionarLibro(item.libro) },
+                                shape = RoundedCornerShape(8.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isSelected) 
+                                        MaterialTheme.colorScheme.primaryContainer 
+                                    else 
+                                        MaterialTheme.colorScheme.surface
+                                )
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            item.libro.titulo,
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            item.libro.autores,
+                                            fontSize = 12.sp,
+                                            color = TextSecondary,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+                                    if (isSelected) {
+                                        Icon(
+                                            Icons.Default.Star,
+                                            contentDescription = "Seleccionado",
+                                            tint = SagePrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Campo de mensaje opcional
+                OutlinedTextField(
+                    value = state.mensajeRecomendacion,
+                    onValueChange = { 
+                        if (it.length <= 300) viewModel.actualizarMensaje(it)
+                    },
+                    label = { Text("Mensaje (opcional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3,
+                    supportingText = {
+                        Text("${state.mensajeRecomendacion.length}/300")
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { viewModel.enviarRecomendacion() },
+                enabled = state.libroSeleccionado != null
+            ) {
+                Text("Enviar recomendación")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { viewModel.ocultarDialogoRecomendar() }) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
