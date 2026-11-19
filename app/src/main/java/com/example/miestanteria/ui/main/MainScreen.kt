@@ -32,6 +32,7 @@ fun MainScreen(
     onLoggedOut: () -> Unit,
     onOpenBook: (String) -> Unit,
     onOpenLector: (Long) -> Unit,
+    onOpenSettings: () -> Unit,
     viewModel: MainViewModel = viewModel(factory = AppViewModelFactory.Factory),
     exploreViewModel: ExploreViewModel = viewModel(factory = AppViewModelFactory.Factory),
     shelfViewModel: ShelfViewModel = viewModel(factory = AppViewModelFactory.Factory),
@@ -40,6 +41,7 @@ fun MainScreen(
 ) {
     val session by viewModel.session.collectAsStateWithLifecycle()
     val biblioteca by viewModel.biblioteca.collectAsStateWithLifecycle()
+    val feed by viewModel.feed.collectAsStateWithLifecycle()
     var currentTab by rememberSaveable { mutableStateOf(NavTab.INICIO) }
     var confirmLogout by rememberSaveable { mutableStateOf(false) }
     val onTabSelected: (NavTab) -> Unit = { currentTab = it }
@@ -53,6 +55,8 @@ fun MainScreen(
             NavTab.INICIO -> HomeScreen(
                 userName = nombre,
                 biblioteca = biblioteca,
+                recomendaciones = feed?.recomendaciones?.take(3) ?: emptyList(),
+                resenasRecientes = feed?.resenasRecientes?.take(3) ?: emptyList(),
                 onOpenBook = onOpenBook,
                 onTabSelected = onTabSelected
             )
@@ -64,6 +68,7 @@ fun MainScreen(
                 onOpenBook = onOpenBook,
                 onOpenLector = onOpenLector,
                 onLogout = { confirmLogout = true },
+                onSettingsClick = onOpenSettings,
                 onTabSelected = onTabSelected
             )
         }

@@ -27,6 +27,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoStories
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
@@ -47,14 +49,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.miestanteria.model.EstadoLectura
 import com.example.miestanteria.model.ItemBiblioteca
+import com.example.miestanteria.ui.components.Avatar
 import com.example.miestanteria.ui.components.BookCover
 import com.example.miestanteria.ui.components.BottomNavBar
 import com.example.miestanteria.ui.components.NavTab
+import com.example.miestanteria.ui.components.StarYellow
 import com.example.miestanteria.ui.theme.OutlineBorder
 import com.example.miestanteria.ui.theme.ProgressTrack
 import com.example.miestanteria.ui.theme.SageContainer
@@ -69,6 +74,8 @@ import com.example.miestanteria.ui.theme.TextSecondary
 fun HomeScreen(
     userName: String,
     biblioteca: List<ItemBiblioteca>,
+    recomendaciones: List<com.example.miestanteria.model.Recomendacion>,
+    resenasRecientes: List<com.example.miestanteria.model.Resena>,
     onOpenBook: (String) -> Unit,
     onTabSelected: (NavTab) -> Unit
 ) {
@@ -107,6 +114,31 @@ fun HomeScreen(
                         }
                     }
                     Spacer(modifier = Modifier.height(22.dp))
+
+                    // Recomendaciones para ti (documento 9.1 - HomeFragment)
+                    if (recomendaciones.isNotEmpty()) {
+                        Text("Para ti", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            items(recomendaciones, key = { it.id }) { rec ->
+                                RecomendacionHomeCard(rec, onClick = { onOpenBook(rec.libro.apiId) })
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(22.dp))
+                    }
+
+                    // Actividad reciente de la comunidad (documento 9.1 - HomeFragment)
+                    if (resenasRecientes.isNotEmpty()) {
+                        Text("Actividad reciente", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            resenasRecientes.take(3).forEach { resena ->
+                                ResenaRecienteCard(resena, onClick = { onOpenBook(resena.libro.apiId) })
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(22.dp))
+                    }
+
                     Text("Mi Biblioteca", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                     Spacer(modifier = Modifier.height(8.dp))
                     LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -248,3 +280,144 @@ private fun LeyendoCard(item: ItemBiblioteca, onClick: () -> Unit) {
         }
     }
 }
+
+@Composable
+private fun RecomendacionHomeCard(
+    recomendacion: com.example.miestanteria.model.Recomendacion,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(260.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Avatar(
+                    lector = recomendacion.emisor,
+                    tamano = 32.dp
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        recomendacion.emisor.nombre,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        "te recomendó",
+                        fontSize = 11.sp,
+                        color = TextSecondary
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                recomendacion.libro.titulo,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                recomendacion.libro.autores,
+                fontSize = 12.sp,
+                color = TextSecondary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (!recomendacion.mensaje.isNullOrBlank()) {
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    recomendacion.mensaje,
+                    fontSize = 12.sp,
+                    fontStyle = androidx.compose.ui.text.font.FontStyle.Italic,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ResenaRecienteCard(
+    resena: com.example.miestanteria.model.Resena,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(modifier = Modifier.padding(12.dp)) {
+            BookCover(
+                libro = resena.libro,
+                modifier = Modifier.width(50.dp),
+                cornerRadius = 6.dp,
+                compacta = true
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Avatar(
+                        lector = resena.autor,
+                        tamano = 24.dp
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        resena.autor.nombre,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    resena.libro.titulo,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    repeat(5) { index ->
+                        Icon(
+                            imageVector = if (index < resena.calificacion) 
+                                Icons.Filled.Star 
+                            else 
+                                Icons.Outlined.Star,
+                            contentDescription = null,
+                            tint = if (index < resena.calificacion) 
+                                StarYellow 
+                            else 
+                                TextSecondary.copy(alpha = 0.3f),
+                            modifier = Modifier.size(14.dp)
+                        )
+                    }
+                }
+                if (!resena.comentario.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        resena.comentario,
+                        fontSize = 12.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+        }
+    }
+}
+
