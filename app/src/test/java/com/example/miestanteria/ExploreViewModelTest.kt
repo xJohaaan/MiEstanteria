@@ -25,11 +25,21 @@ import org.junit.Test
 
 private class FakeCatalogo : CatalogoGateway {
     val llamadas = mutableListOf<Triple<String, TipoBusqueda, Int>>()
+    var ultimoAnioDesde: Int? = null
+    var ultimoAnioHasta: Int? = null
     var resultado: (Int) -> NetworkResult<List<Libro>> = { pagina ->
         NetworkResult.Success(List(20) { Libro("id-$pagina-$it", "Libro $it", "Autor") })
     }
-    override suspend fun buscar(texto: String, tipo: TipoBusqueda, pagina: Int): NetworkResult<List<Libro>> {
+    override suspend fun buscar(
+        texto: String,
+        tipo: TipoBusqueda,
+        pagina: Int,
+        anioDesde: Int?,
+        anioHasta: Int?
+    ): NetworkResult<List<Libro>> {
         llamadas += Triple(texto, tipo, pagina)
+        ultimoAnioDesde = anioDesde
+        ultimoAnioHasta = anioHasta
         return resultado(pagina)
     }
 }
@@ -121,5 +131,17 @@ class ExploreViewModelTest {
         vm.limpiar()
         assertTrue(vm.state.value.resultados.isEmpty())
         assertFalse(vm.state.value.buscado)
+    }
+
+    @Test
+    fun elFiltroPorAnioSeEnviaAlServidor() = runTest(dispatcher) {
+        val fake = FakeCatalogo()
+        val vm = ExploreViewModel(fake, flowOf(emptySet()))
+        vm.buscarAhora("dune")
+        advanceUntilIdle()
+        vm.onAnioChange(2000, 2010)
+        advanceUntilIdle()
+        assertEquals(2000, fake.ultimoAnioDesde)
+        assertEquals(2010, fake.ultimoAnioHasta)
     }
 }

@@ -71,6 +71,17 @@ import com.example.miestanteria.ui.theme.TextSecondary
 
 private val SUGERENCIAS = listOf("Gabriel García Márquez", "Cien años de soledad", "Harry Potter", "Ciencia ficción", "Isabel Allende")
 
+/** Rangos de ano que se ofrecen como filtro rapido (RF03, seccion 9.1 del documento). */
+private data class RangoAnio(val etiqueta: String, val desde: Int?, val hasta: Int?)
+
+private val RANGOS_ANIO = listOf(
+    RangoAnio("Todos los años", null, null),
+    RangoAnio("2020 o después", 2020, null),
+    RangoAnio("2010–2019", 2010, 2019),
+    RangoAnio("2000–2009", 2000, 2009),
+    RangoAnio("Antes de 2000", null, 1999)
+)
+
 /** Pantalla Explorar (SearchFragment del documento): busqueda en Google Books con autocompletado. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -150,6 +161,24 @@ fun ExploreScreen(
                         selected = state.tipo == tipo,
                         onClick = { viewModel.onTipoChange(tipo) },
                         label = { Text(tipo.etiqueta) },
+                        colors = FilterChipDefaults.filterChipColors(
+                            selectedContainerColor = SagePrimary,
+                            selectedLabelColor = Color.White
+                        )
+                    )
+                }
+            }
+
+            // Filtro por ano de publicacion (seccion 9.1 del documento)
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(RANGOS_ANIO) { rango ->
+                    FilterChip(
+                        selected = state.anioDesde == rango.desde && state.anioHasta == rango.hasta,
+                        onClick = { viewModel.onAnioChange(rango.desde, rango.hasta) },
+                        label = { Text(rango.etiqueta, fontSize = 13.sp) },
                         colors = FilterChipDefaults.filterChipColors(
                             selectedContainerColor = SagePrimary,
                             selectedLabelColor = Color.White

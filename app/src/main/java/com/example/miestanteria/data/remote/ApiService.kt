@@ -33,7 +33,9 @@ interface ApiService {
     suspend fun buscarLibros(
         @Query("q") q: String,
         @Query("tipo") tipo: String? = null,
-        @Query("pagina") pagina: Int = 0
+        @Query("pagina") pagina: Int = 0,
+        @Query("anioDesde") anioDesde: Int? = null,
+        @Query("anioHasta") anioHasta: Int? = null
     ): List<LibroDto>
 
     @GET("libros/{apiId}")

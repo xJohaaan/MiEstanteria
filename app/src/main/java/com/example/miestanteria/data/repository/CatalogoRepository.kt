@@ -17,7 +17,13 @@ enum class TipoBusqueda(val etiqueta: String, val valorApi: String?) {
 
 /** Operaciones de busqueda que usa la pantalla Explorar (interfaz para poder probarla). */
 interface CatalogoGateway {
-    suspend fun buscar(texto: String, tipo: TipoBusqueda, pagina: Int): NetworkResult<List<Libro>>
+    suspend fun buscar(
+        texto: String,
+        tipo: TipoBusqueda,
+        pagina: Int,
+        anioDesde: Int? = null,
+        anioHasta: Int? = null
+    ): NetworkResult<List<Libro>>
 }
 
 /** Modelo: busqueda de libros a traves del servidor (que consulta Google Books u Open Library). */
@@ -26,8 +32,14 @@ class CatalogoRepository(private val api: ApiService) : CatalogoGateway {
     /** Libros vistos en busquedas recientes, para abrir su detalle sin volver a pedirlos. */
     private val cache = ConcurrentHashMap<String, Libro>()
 
-    override suspend fun buscar(texto: String, tipo: TipoBusqueda, pagina: Int): NetworkResult<List<Libro>> =
-        when (val r = safeApiCall { api.buscarLibros(texto.trim(), tipo.valorApi, pagina) }) {
+    override suspend fun buscar(
+        texto: String,
+        tipo: TipoBusqueda,
+        pagina: Int,
+        anioDesde: Int?,
+        anioHasta: Int?
+    ): NetworkResult<List<Libro>> =
+        when (val r = safeApiCall { api.buscarLibros(texto.trim(), tipo.valorApi, pagina, anioDesde, anioHasta) }) {
             is NetworkResult.Success -> {
                 val libros = r.data.map { it.toLibro() }
                 libros.forEach { cache[it.apiId] = it }

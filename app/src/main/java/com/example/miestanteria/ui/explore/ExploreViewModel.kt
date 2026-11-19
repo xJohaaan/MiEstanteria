@@ -20,6 +20,8 @@ import kotlinx.coroutines.launch
 data class ExploreUiState(
     val query: String = "",
     val tipo: TipoBusqueda = TipoBusqueda.TODO,
+    val anioDesde: Int? = null,
+    val anioHasta: Int? = null,
     val resultados: List<Libro> = emptyList(),
     val cargando: Boolean = false,
     val cargandoMas: Boolean = false,
@@ -73,6 +75,13 @@ class ExploreViewModel(
         if (_state.value.query.isNotBlank()) buscarAhora()
     }
 
+    /** Filtro por ano. Con [desde] y [hasta] en null se muestran todos los anos. */
+    fun onAnioChange(desde: Int?, hasta: Int?) {
+        if (desde == _state.value.anioDesde && hasta == _state.value.anioHasta) return
+        _state.update { it.copy(anioDesde = desde, anioHasta = hasta) }
+        if (_state.value.query.isNotBlank()) buscarAhora()
+    }
+
     /** Buscar de inmediato (boton "buscar" del teclado o una sugerencia). */
     fun buscarAhora(texto: String? = null) {
         if (texto != null) _state.update { it.copy(query = texto) }
@@ -83,7 +92,11 @@ class ExploreViewModel(
 
     fun limpiar() {
         busqueda?.cancel()
-        _state.value = ExploreUiState(tipo = _state.value.tipo)
+        _state.value = ExploreUiState(
+            tipo = _state.value.tipo,
+            anioDesde = _state.value.anioDesde,
+            anioHasta = _state.value.anioHasta
+        )
     }
 
     /** Carga la siguiente pagina al llegar al final de la lista. */
@@ -97,7 +110,7 @@ class ExploreViewModel(
         val s = _state.value
         val pagina = if (nueva) 0 else s.pagina + 1
         _state.update { if (nueva) it.copy(cargando = true, error = null) else it.copy(cargandoMas = true) }
-        when (val r = catalogo.buscar(s.query, s.tipo, pagina)) {
+        when (val r = catalogo.buscar(s.query, s.tipo, pagina, s.anioDesde, s.anioHasta)) {
             is NetworkResult.Success -> _state.update { cur ->
                 val lista = if (nueva) r.data else (cur.resultados + r.data).distinctBy { it.apiId }
                 cur.copy(
