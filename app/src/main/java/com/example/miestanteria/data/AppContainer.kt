@@ -10,6 +10,7 @@ import com.example.miestanteria.data.repository.BibliotecaRepository
 import com.example.miestanteria.data.repository.CatalogoRepository
 import com.example.miestanteria.data.repository.ComunidadRepository
 import com.example.miestanteria.data.session.SessionManager
+import com.example.miestanteria.ui.theme.ThemePreference
 
 /** Contenedor manual de dependencias (inyeccion de dependencias sencilla, sin librerias). */
 class AppContainer(context: Context) {
@@ -31,4 +32,6 @@ class AppContainer(context: Context) {
     val comunidadRepository = ComunidadRepository(api)
 
     val authRepository = AuthRepository(api, sessionManager, onLogout = { bibliotecaRepository.limpiar() })
+
+    val themePreference = ThemePreference(context.applicationContext)
 }

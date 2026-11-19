@@ -9,7 +9,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.example.miestanteria.ui.navigation.AppNavHost
+import com.example.miestanteria.ui.theme.AppTheme
 import com.example.miestanteria.ui.theme.MiEstanteriaTheme
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 /** Unica Activity: aloja la navegacion entre pantallas hechas con Jetpack Compose. */
 class MainActivity : ComponentActivity() {
@@ -20,8 +24,20 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         pedirPermisoRedLocalSiHaceFalta()
+        val themePreference = (application as MiEstanteriaApp).container.themePreference
+        
         setContent {
-            MiEstanteriaTheme {
+            val currentTheme by themePreference.tema.collectAsState(
+                initial = AppTheme.SYSTEM
+            )
+            val systemDarkTheme = isSystemInDarkTheme()
+            val darkTheme = when (currentTheme) {
+                AppTheme.LIGHT -> false
+                AppTheme.DARK -> true
+                AppTheme.SYSTEM -> systemDarkTheme
+            }
+            
+            MiEstanteriaTheme(darkTheme = darkTheme) {
                 AppNavHost()
             }
         }
